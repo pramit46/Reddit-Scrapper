@@ -1,10 +1,10 @@
 export interface EngagementMetrics {
   comments: number;
-  likes: number; // Mapped from Reddit upvotes
+  likes: number; // Mapped from Reddit upvotes or Facebook reactions
   shares: number | null;
 }
 
-export interface RedditEvent {
+export interface SocialMediaPost {
   author_id: string | null;
   author_name: string;
   clean_event_text: string;
@@ -16,5 +16,5 @@ export interface RedditEvent {
   parent_event_id: string | null;
   platform: string;
   timestamp_utc: string;
-  subreddit: string; // Crucial for Reddit context
+  source_context: string | null; // e.g., subreddit for Reddit, group/page for Facebook
 }

@@ -1,5 +1,5 @@
 {
-  "name": "Reddit Post Scraper",
-  "description": "An interface to find details about Reddit posts on a given topic using AI. Users can input a topic, view the results, and download them as a JSON file.",
+  "name": "Social Post Agent",
+  "description": "An interface with AI agents to find details about Reddit and Facebook posts on a given topic. Users can input a topic, view the results, and download them as a JSON or CSV file.",
   "requestFramePermissions": []
 }
