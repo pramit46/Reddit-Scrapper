@@ -49,7 +49,7 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [searchedTopic, setSearchedTopic] = useState<string>('');
-    const [downloadFormat, setDownloadFormat] = useState<'json' | 'csv'>('json');
+    const [downloadFormat, setDownloadFormat] = useState<'json' | 'csv'>('csv');
 
     const handleScrape = useCallback(async () => {
         if (!topic.trim()) {

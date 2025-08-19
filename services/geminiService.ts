@@ -40,7 +40,7 @@ export const fetchRedditEvents = async (topic: string): Promise<RedditEvent[]> =
         const prompt = `
             You are an expert data analyst and researcher. Your task is to find recent and popular posts on www.reddit.com related to the topic: "${topic}".
             
-            Return a list of at least 10 posts if available. For each post, extract the information according to the provided JSON schema.
+            Return a list of at least 100 posts if available. For each post, extract the information according to the provided JSON schema.
             Specifically, provide:
             - author_id: The author's Reddit user ID (e.g., 't2_...'). Can be null.
             - author_name: The author's username.
