@@ -1,54 +1,76 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { SocialMediaPost } from './types';
-import { fetchSocialMediaPosts, Platform } from './services/geminiService';
+import { fetchSocialMediaPosts } from './services/geminiService';
 import { DownloadIcon, RedditIcon, SearchIcon, FacebookIcon, InstagramIcon, NewsIcon } from './components/IconComponents';
 
 type Agent = 'reddit' | 'facebook' | 'instagram' | 'inshorts';
 type Category = 'social' | 'news';
 
-const AGENT_CONFIG: Record<Agent, { name: string; Icon: React.FC<{ className?: string }>; placeholder: string; color: string; ring: string; bg: string; hoverBg: string; border: string; }> = {
+const AGENT_CONFIG: Record<Agent, {
+    name: string;
+    Icon: React.FC<{ className?: string }>;
+    placeholder: string;
+    theme: {
+        '--color-primary': string;
+        '--color-primary-hover': string;
+        '--color-text': string;
+        '--color-ring': string;
+        '--color-border': string;
+        '--gradient-bg'?: string;
+    };
+}> = {
     reddit: {
         name: 'Reddit',
         Icon: RedditIcon,
         placeholder: "e.g., 'productivity hacks'",
-        color: 'text-orange-500',
-        ring: 'focus:ring-orange-500',
-        bg: 'bg-orange-500',
-        hoverBg: 'hover:bg-orange-600',
-        border: 'border-orange-500'
+        theme: {
+            '--color-primary': '#f97316',
+            '--color-primary-hover': '#ea580c',
+            '--color-text': '#f97316',
+            '--color-ring': '#f97316',
+            '--color-border': '#f97316',
+        }
     },
     facebook: {
         name: 'Facebook',
         Icon: FacebookIcon,
         placeholder: "e.g., 'local community events'",
-        color: 'text-blue-600',
-        ring: 'focus:ring-blue-600',
-        bg: 'bg-blue-600',
-        hoverBg: 'hover:bg-blue-700',
-        border: 'border-blue-600'
+        theme: {
+            '--color-primary': '#2563eb',
+            '--color-primary-hover': '#1d4ed8',
+            '--color-text': '#2563eb',
+            '--color-ring': '#2563eb',
+            '--color-border': '#2563eb',
+        }
     },
     instagram: {
         name: 'Instagram',
         Icon: InstagramIcon,
         placeholder: "e.g., 'travel photography'",
-        color: 'text-pink-500',
-        ring: 'focus:ring-pink-500',
-        bg: 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500',
-        hoverBg: 'hover:opacity-90',
-        border: 'border-pink-500'
+        theme: {
+            '--color-primary': '#ec4899',
+            '--color-primary-hover': '#db2777',
+            '--color-text': '#ec4899',
+            '--color-ring': '#ec4899',
+            '--color-border': '#ec4899',
+            '--gradient-bg': 'linear-gradient(to right, #a855f7, #ec4899, #f97316)',
+        }
     },
     inshorts: {
         name: 'Inshorts',
         Icon: NewsIcon,
         placeholder: "e.g., 'latest tech news'",
-        color: 'text-slate-600 dark:text-slate-300',
-        ring: 'focus:ring-slate-500',
-        bg: 'bg-slate-700',
-        hoverBg: 'hover:bg-slate-800',
-        border: 'border-slate-500'
+        theme: {
+            '--color-primary': '#334155',
+            '--color-primary-hover': '#1e2936',
+            '--color-text': '#475569',
+            '--color-ring': '#64748b',
+            '--color-border': '#64748b',
+        }
     }
 };
+
 
 const CATEGORIES: Record<Category, { name: string; agents: Agent[] }> = {
     social: {
@@ -86,6 +108,21 @@ const App: React.FC = () => {
     const [activeCategory, setActiveCategory] = useState<Category>('social');
     const [activeAgent, setActiveAgent] = useState<Agent>('reddit');
 
+    useEffect(() => {
+        const theme = AGENT_CONFIG[activeAgent].theme;
+        const root = document.documentElement;
+        Object.entries(theme).forEach(([key, value]) => {
+            if (value) {
+                root.style.setProperty(key, value);
+            }
+        });
+        // Special handling for gradient: remove bg color if gradient exists
+        if (theme['--gradient-bg']) {
+            root.style.removeProperty('--color-primary');
+        }
+
+    }, [activeAgent]);
+
     const handleCategoryChange = (category: Category) => {
         setActiveCategory(category);
         setActiveAgent(CATEGORIES[category].agents[0]);
@@ -105,7 +142,7 @@ const App: React.FC = () => {
 
 const Header: React.FC = () => (
     <header className="text-center mb-8">
-        <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[var(--color-text)] transition-colors duration-300">
             AI Data Agent
         </h1>
         <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mt-4">
@@ -129,7 +166,7 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({ activeCategory, onCategoryC
                     onClick={() => onCategoryChange(catKey)}
                     className={`px-6 py-2 text-lg font-bold transition-colors duration-200 ${
                         isActive 
-                        ? 'text-blue-600 dark:text-blue-400' 
+                        ? 'text-[var(--color-text)]' 
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
@@ -159,7 +196,7 @@ const AgentTabs: React.FC<AgentTabsProps> = ({ activeCategory, activeAgent, setA
                         onClick={() => setActiveAgent(agent)}
                         className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-semibold border-b-2 transition-all duration-200 ${
                             isActive
-                                ? `${config.color} border-current`
+                                ? 'text-[var(--color-text)] border-[var(--color-border)]'
                                 : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-700 dark:hover:text-slate-200'
                         }`}
                         role="tab"
@@ -222,19 +259,22 @@ const AgentInterface: React.FC<{ agent: Agent }> = ({ agent }) => {
 };
 
 const InputSection: React.FC<{ agent: Agent; topic: string; setTopic: (topic: string) => void; onScrape: () => void; isLoading: boolean; }> = ({ agent, topic, setTopic, onScrape, isLoading }) => {
-    const config = AGENT_CONFIG[agent];
     const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onScrape(); };
+    const config = AGENT_CONFIG[agent];
+    const buttonStyle = config.theme['--gradient-bg'] ? { background: config.theme['--gradient-bg'] } : {};
+    const buttonClasses = !config.theme['--gradient-bg'] ? 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]' : 'hover:opacity-90';
 
     return (
         <div className="max-w-2xl mx-auto mb-8 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-4">
                 <input
                     type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={config.placeholder}
-                    className={`w-full px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 border-2 border-transparent focus:outline-none focus:ring-2 ${config.ring} focus:border-transparent transition`}
+                    className={`w-full px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] focus:border-transparent transition`}
                     disabled={isLoading} />
                 <button
                     type="submit"
-                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 font-semibold text-white rounded-lg shadow-md ${config.bg} ${config.hoverBg} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-800 ${config.ring} disabled:bg-slate-400 dark:disabled:bg-slate-600 disabled:cursor-not-allowed transition-all duration-200`}
+                    style={buttonStyle}
+                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 font-semibold text-white rounded-lg shadow-md ${buttonClasses} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-800 focus:ring-[var(--color-ring)] disabled:bg-slate-400 dark:disabled:bg-slate-600 disabled:cursor-not-allowed transition-all duration-200`}
                     disabled={isLoading}>
                     <SearchIcon className="w-5 h-5" />
                     <span>{isLoading ? 'Searching...' : 'Search'}</span>
@@ -248,7 +288,7 @@ const LoadingIndicator: React.FC<{ agent: Agent }> = ({ agent }) => {
     const config = AGENT_CONFIG[agent];
     return (
         <div className="text-center py-10">
-            <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${config.border} mx-auto`}></div>
+            <div className={`animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-border)] mx-auto`}></div>
             <p className="mt-4 text-slate-600 dark:text-slate-400">AI is gathering data from {config.name}... this may take a moment.</p>
         </div>
     );
@@ -297,12 +337,10 @@ const ResultsSection: React.FC<{ posts: SocialMediaPost[]; onDownload: () => voi
                     <tbody>
                         {posts.map((post, index) => {
                             const agent = post.platform.toLowerCase() as Agent;
-                            const config = AGENT_CONFIG[agent] || AGENT_CONFIG.reddit;
-                            const hoverColor = config.color;
                             return (
                                 <tr key={index} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                     <td className="px-6 py-4">
-                                        <a href={post.event_url} target="_blank" rel="noopener noreferrer" className={`font-semibold text-slate-900 dark:text-white hover:${hoverColor} dark:hover:${hoverColor} transition-colors`}>{post.event_title}</a>
+                                        <a href={post.event_url} target="_blank" rel="noopener noreferrer" className={`font-semibold text-slate-900 dark:text-white hover:text-[var(--color-text)] dark:hover:text-[var(--color-text)] transition-colors`}>{post.event_title}</a>
                                         <p className="text-slate-600 dark:text-slate-400 mt-1 italic">"{post.clean_event_text}"</p>
                                     </td>
                                     <td className="px-6 py-4 font-mono text-xs">{agent === 'reddit' && post.source_context ? `r/${post.source_context}` : post.source_context}</td>
